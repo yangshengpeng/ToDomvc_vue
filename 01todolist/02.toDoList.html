@@ -1,0 +1,255 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title></title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="./css/index.css">
+    <script type="text/javascript" src="./lib/vue.js"></script>
+
+    <style>
+        /* 解决因网络出现胡子语法 */
+
+        [ v-cloak] {
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body>
+    <section class="todoapp">
+        <header class="header">
+            <h1>任务清单</h1>
+            <input autofocus="autofocus" autocomplete="off" placeholder="想干啥?" class="new-todo" v-model="text" @keyup.enter="onEnter">
+        </header>
+
+        <section class="main">
+            <input type="checkbox" v-model="checkAll" @change="checkAllToDo" class="toggle-all">
+            <ul class="todo-list" v-cloak>
+                <li class="todo" :class="{completed:item.isYN,editing:item.isEait}" v-for="(item, index) in untoDoList">
+                    <div class="view">
+                        <input type="checkbox" @change="checkAllList" class="toggle" v-model="item.isYN">
+                        <label @dblclick="update(index)">{{item.name}}</label>
+                        <button class="destroy" @click="del(index)"></button>
+                    </div>
+                    <input type="text" v-model="something" @keyup.enter="saveEait(index)" @keyup.esc="cancel(index)" @blur="cancel(index)" class="edit">
+                </li>
+                <!-- <h2>下面的是模板</h2>
+                <li class="todo ">
+                    <div class="view">
+                        <input type="checkbox" class="toggle">
+                        <label>21</label>
+                        <button class="destroy"></button>
+                    </div>
+                    <input type="text" class="edit">
+                </li>
+                <li class="todo completed">
+                    <div class="view">
+                        <input type="checkbox" class="toggle">
+                        <label>21</label>
+                        <button class="destroy"></button>
+                    </div>
+                    <input type="text" class="edit">
+                </li>
+                <li class="todo editing"> -->
+                <!-- <div class="view">
+                            <input type="checkbox" class="toggle">
+                            <label>21</label>
+                            <button class="destroy"></button>
+                        </div>
+                        <input type="text" class="edit">
+                    </li> -->
+            </ul>
+        </section>
+        <footer class="footer">
+            <span class="todo-count" v-if="nodone">
+                <strong>{{nodone}}</strong> 项 剩余
+            </span>
+            <ul class="filters">
+                <li>
+                    <a href="#/all" :class="{selected:tabarText=='全部'}" @click="tabar('全部')">全部</a>
+                </li>
+                <li>
+                    <a href="#/active" :class="{selected:tabarText=='未完成'}" @click="tabar('未完成')">未完成</a>
+                </li>
+                <li>
+                    <a href="#/completed" :class="{selected:tabarText=='完成'}" @click="tabar('完成')">完成</a>
+                </li>
+            </ul>
+            <button @click="clear" class="clear-completed">
+                清空列表
+            </button>
+        </footer>
+    </section>
+    <footer class="info">
+        <p>双击进入编辑状态</p>
+        <p>鸣谢:
+            <a href="http://evanyou.me">Evan You</a>
+        </p>
+        <p>参考于
+            <a href="http://todomvc.com">TodoMVC</a>
+        </p>
+    </footer>
+
+    <script>
+        // tell the embed parent frame the height of the content
+        if (window.parent && window.parent.parent) {
+            window.parent.parent.postMessage(["resultsFrame", {
+                height: document.body.getBoundingClientRect().height,
+                slug: "4dr2fLb7"
+            }], "*")
+        }
+    </script>
+
+
+</body>
+
+</html>
+<script src="./lib/vue.js"></script>
+<script>
+    // 判断是否有值localStorage中
+    let toDoList = JSON.parse(window.localStorage.getItem("tolist"));
+
+    if (toDoList) {
+        // 有值
+        // toDoList=toDoList
+    } else {
+        // 没有值
+        toDoList = [{
+            name: "洗菜",
+            isYN: true,
+            isEait: false
+        },
+        {
+            name: "吃饭",
+            isYN: false,
+            isEait: false
+        }]
+    }
+
+    let app = new Vue({
+        el: ".todoapp",
+
+        data: {
+            text: "",
+            checkAll: false,
+            //全部,等切换,默认为全部    
+            tabarText: '全部',
+            // 列表数据
+            something: "",
+            toDoList
+        },
+        methods: {
+            // 输入框输入后要干的事,增加数据     
+            onEnter() {
+                // 去掉空格
+                this.text = this.text.trim();
+                // 判断是否为空     
+                if (this.text != "") {
+                    this.toDoList.push({
+                        name: this.text,
+                        isYN: false,
+                        isEait: false
+                    })
+                    this.text = ""
+                }
+            },
+            // 删除
+            del(index) {
+                this.toDoList.splice(index, 1);
+            },
+            // 修改
+            update(index) {
+                for (let i = 0; i < this.toDoList.length; i++) {
+                    this.toDoList[i].isEait = false;
+                }
+                this.toDoList[index].isEait = !this.toDoList[index].isEait;
+                this.something = this.toDoList[index].name;
+            },
+            // 按回车保存
+            saveEait(index) {
+                this.toDoList[index].name = this.something;
+                this.toDoList[index].isEait = false;
+            },
+            cancel(index) {
+                this.toDoList[index].isEait = false;
+            },
+            // 清空
+            clear() {
+                this.toDoList = [];
+            },
+            // 切换全部等
+            tabar(data) {
+                // console.log(data);
+                this.tabarText = data;
+            },
+            // 全选,反选
+            checkAllToDo() {
+                // console.log(this.checkAll);
+                for (let i = 0; i < this.toDoList.length; i++) {
+                    this.toDoList[i].isYN = this.checkAll;
+                }
+            },
+            checkAllList() {
+                // 获得总数
+                let allNum = this.toDoList.length;
+                // console.log(allNum);
+                // 单个点击的个数
+                let num = this.toDoList.filter((v, i) => {
+                    if (v.isYN == true) return v;
+                }).length
+                console.log(num);
+
+                this.checkAll = allNum == num;
+            }
+        },
+        // 计算
+        computed: {
+            // 计算剩余的项
+            nodone() {
+                let num = 0;
+                for (let i = 0; i < this.toDoList.length; i++) {
+                    if (this.toDoList[i].isYN == false) {
+                        num++;
+                    }
+                }
+                return num;
+            },
+            // 计算循环的数组
+            untoDoList() {
+                let listarr = [];
+                for (let i = 0; i < this.toDoList.length; i++) {
+                    switch (this.tabarText) {
+                        case "全部":
+                            listarr.push(this.toDoList[i]);
+                            break;
+                        case "完成":
+                            if (this.toDoList[i].isYN == true) {
+
+                                listarr.push(this.toDoList[i]);
+
+                            }
+                            break;
+                        case "未完成":
+                            if (this.toDoList[i].isYN == false) {
+                                listarr.push(this.toDoList[i]);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return listarr;
+            }
+        }
+    });
+    //在浏览器关闭之前保存数据
+    window.onbeforeunload = function () {
+        window.localStorage.setItem("tolist", JSON.stringify(toDoList));
+    }   
+</script>
